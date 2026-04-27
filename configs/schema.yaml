@@ -1,0 +1,81 @@
+# PolicyGraphAudit-RT — heterogeneous graph schema
+#
+# This is the canonical schema used by M2/M3/M4. Update here, not in code.
+
+node_types:
+  Policy:
+    description: A privacy-policy document (one per app)
+    features: [doc_id, source, length_chars, lang]
+
+  PolicySegment:
+    description: A paragraph-level segment from a policy
+    features: [segment_text_emb, opp115_category, position]
+
+  DataType:
+    description: A category of personal data
+    examples: [email, location_precise, contacts, advertising_id, device_id, name, phone]
+
+  Purpose:
+    description: Why data is collected
+    examples: [advertising, analytics, app_functionality, personalization, security]
+
+  ThirdParty:
+    description: Named third-party recipient
+    features: [name, jurisdiction, parent_company]
+
+  PrivacyLabel:
+    description: A declared data-safety label (one per app)
+    features: [platform, declared_at, num_data_types_listed]
+
+  App:
+    description: Anchor node tying policy + label + runtime together
+    features: [package_name, category, install_count_bucket, developer]
+
+  SDK:
+    description: A third-party SDK detected in the APK
+    features: [tracker_id, name, category, owner, jurisdiction]
+
+  Endpoint:
+    description: A network destination contacted at runtime
+    features: [domain, country_code, declared_purpose]
+
+edge_types:
+  # Policy side
+  - [Policy, HAS_SEGMENT, PolicySegment]
+  - [PolicySegment, MENTIONS, DataType]
+  - [PolicySegment, FOR_PURPOSE, Purpose]
+  - [PolicySegment, SHARED_WITH, ThirdParty]
+
+  # Label side
+  - [PrivacyLabel, DECLARES_COLLECTS, DataType]
+  - [PrivacyLabel, DECLARES_PURPOSE, Purpose]
+  - [PrivacyLabel, DECLARES_SHARES, ThirdParty]
+
+  # Runtime side
+  - [SDK, COLLECTS_DATATYPE, DataType]      # from Yale Privacy Lab profiles
+  - [SDK, OPERATED_BY, ThirdParty]
+  - [App, CONTAINS_SDK, SDK]                 # from TrackerControl / Exodus
+  - [App, REACHES_ENDPOINT, Endpoint]
+  - [Endpoint, RESOLVES_TO, ThirdParty]
+
+  # Anchors
+  - [App, HAS_POLICY, Policy]
+  - [App, HAS_LABEL, PrivacyLabel]
+
+# Discrepancy edges (the link-prediction targets)
+discrepancy_edge_types:
+  - name: UNDECLARED_COLLECTION
+    description: Runtime collects DataType X, but neither Policy nor Label mentions it
+    formal: (App, runtime_collects, DataType) AND NOT (Policy, mentions, DataType) AND NOT (Label, declares_collects, DataType)
+
+  - name: UNDECLARED_SHARING
+    description: SDK from third-party Y is present, but neither Policy nor Label mentions Y or its category
+    formal: (App, contains_sdk, SDK) AND (SDK, operated_by, ThirdParty Y) AND NOT (Policy, shared_with, Y) AND NOT (Label, declares_shares, Y)
+
+  - name: POLICY_LABEL_MISMATCH
+    description: Policy claims practice X but Label contradicts
+    formal: (Policy, mentions, DataType X) XOR (Label, declares_collects, DataType X)
+
+  - name: PURPOSE_DRIFT
+    description: Data collected for purpose declared as P1 but SDK profile says P2
+    formal: (Policy, for_purpose, P1) AND (SDK, COLLECTS_DATATYPE, *, purpose=P2) where P1 != P2

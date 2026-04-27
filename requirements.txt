@@ -1,0 +1,37 @@
+# PolicyGraphAudit-RT - M1 Data Acquisition Dependencies
+# Pin versions for reproducibility
+
+# HuggingFace datasets (for OPP-115 and WIPI/GoogleDataSafety)
+datasets==3.6.0
+huggingface-hub==0.31.4
+
+# Data processing
+pandas==2.2.3
+pyarrow==19.0.1
+numpy==1.26.4
+
+# HTTP requests
+requests==2.32.3
+urllib3==2.3.0
+beautifulsoup4==4.12.3
+
+# Compression / file formats
+brotli==1.1.0
+
+# Standard library only (no install needed):
+# json, os, re, random, collections, subprocess, urllib.request
+
+# M2 Policy Graph Builder
+sentence-transformers==5.4.1
+scikit-learn==1.8.0
+networkx==3.6.1
+joblib==1.5.3
+
+# M3 Privacy Label + Runtime Evidence Graph Builder
+# pandas, pyarrow, networkx already listed above
+# No additional dependencies required
+
+# M4 Heterogeneous Graph Fusion
+tqdm==4.67.3
+torch==2.11.0
+torch-geometric==2.7.0

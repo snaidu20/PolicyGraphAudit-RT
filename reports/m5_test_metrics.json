@@ -1,0 +1,79 @@
+{
+  "model": "full_hetero_gnn",
+  "macro_f1": 1.0,
+  "per_class_f1": {
+    "CONSISTENT": 1.0,
+    "POLICY_LABEL_MISMATCH": 1.0,
+    "OVER_DISCLOSURE": 1.0,
+    "UNDECLARED_COLLECTION": 1.0
+  },
+  "classification_report": {
+    "CONSISTENT": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1-score": 1.0,
+      "support": 91.0
+    },
+    "POLICY_LABEL_MISMATCH": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1-score": 1.0,
+      "support": 74.0
+    },
+    "OVER_DISCLOSURE": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1-score": 1.0,
+      "support": 281.0
+    },
+    "UNDECLARED_COLLECTION": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1-score": 1.0,
+      "support": 75.0
+    },
+    "accuracy": 1.0,
+    "macro avg": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1-score": 1.0,
+      "support": 521.0
+    },
+    "weighted avg": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1-score": 1.0,
+      "support": 521.0
+    }
+  },
+  "confusion_matrix": [
+    [
+      91,
+      0,
+      0,
+      0
+    ],
+    [
+      0,
+      74,
+      0,
+      0
+    ],
+    [
+      0,
+      0,
+      281,
+      0
+    ],
+    [
+      0,
+      0,
+      0,
+      75
+    ]
+  ],
+  "best_val_f1": 1.0,
+  "epochs_trained": 12,
+  "params": 1994436,
+  "runtime_sec": 45.631141662597656
+}

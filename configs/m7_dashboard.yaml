@@ -1,0 +1,77 @@
+# M7 — Plotly Dash Dashboard Layout
+#
+# Mirrors the MicroPlastiNet 6-tab pattern. Each tab has a clear research purpose.
+# Tabs are ordered from "what is this" (overview) to "how to use it" (reports).
+
+theme:
+  base: light                  # match MicroPlastiNet
+  accent: "#2563eb"            # blue-600 — research/auditing connotation
+  warning: "#f59e0b"           # amber-500 — discrepancy highlights
+  danger: "#dc2626"            # red-600 — UNDECLARED_COLLECTION cases
+  success: "#16a34a"           # green-600 — CONSISTENT cases
+  font_family: "Inter, system-ui, sans-serif"
+  monospace_font: "JetBrains Mono, monospace"
+
+tabs:
+  - id: overview
+    title: Overview
+    icon: home
+    description: "Project narrative, methodology diagram, dataset summary, headline numbers"
+    components:
+      - hero_panel             # one-line thesis, author, status
+      - architecture_diagram   # M1→M7 flow
+      - dataset_card           # 268 apps, 3202 labels, sources
+
+  - id: graph_explorer
+    title: Graph Explorer
+    icon: network
+    description: "Interactive tri-partite graph for any single app"
+    components:
+      - app_picker             # dropdown of 252 apps
+      - hetero_graph_view      # plotly graph: blue=policy, green=label, red=runtime
+      - node_inspector         # click a node, see attributes + neighbors
+      - discrepancy_legend
+
+  - id: discrepancy_atlas
+    title: Discrepancy Atlas
+    icon: heatmap
+    description: "Where do policy↔practice gaps cluster across the corpus?"
+    components:
+      - heatmap_app_category_x_discrepancy_class
+      - per_genre_breakdown_bar
+      - top_undeclared_collections_table
+
+  - id: sdk_leaderboard
+    title: SDK Risk Leaderboard
+    icon: list
+    description: "Which third-party SDKs cause the most undisclosed leaks across all 268 apps?"
+    components:
+      - sdk_ranked_table       # sortable: SDK name, owner, # apps, undisclosed_data_types
+      - sdk_detail_panel       # on click: Yale profile + Exodus signature
+
+  - id: model_card
+    title: Model Card
+    icon: model
+    description: "Performance, ablations, fairness, limitations"
+    components:
+      - ablation_table         # full GNN vs. baselines
+      - confusion_matrix
+      - per_class_f1_bars
+      - training_curves_image
+      - limitations_text
+
+  - id: reports
+    title: Audit Reports
+    icon: pdf
+    description: "Generate per-app audit PDFs (M6 output)"
+    components:
+      - app_picker
+      - generate_button        # triggers M6 PDF generation
+      - download_link
+      - sample_report_preview
+
+footer:
+  text: "PolicyGraphAudit-RT · Research prototype · Ongoing research"
+  links:
+    - {label: "GitHub", url_placeholder: "https://github.com/snaidu20/PolicyGraphAudit-RT"}
+    - {label: "Methodology", target: "#overview"}

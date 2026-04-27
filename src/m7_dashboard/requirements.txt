@@ -1,0 +1,17 @@
+# M7 Dashboard requirements
+# Core framework
+dash>=2.16
+dash-bootstrap-components>=1.0
+
+# Visualization
+plotly>=5.18
+
+# Data / ML (already in main requirements)
+networkx>=3.0
+pandas>=1.5
+torch>=2.0
+torch-geometric>=2.3
+pyarrow>=10.0
+
+# Production deployment
+gunicorn>=20.0

@@ -1,0 +1,5 @@
+model,macro_f1,f1_consistent,f1_policy_label_mismatch,f1_over_disclosure,f1_undeclared_collection,params,runtime_sec
+tsne_pca_clustering,0.2802,0.0,0.3896,0.7313,0.0,0,0.1
+text_only_logreg,0.6065,0.463,0.4923,0.7476,0.7232,3092,1.2
+policy_only_gnn,0.6925,0.4541,0.6447,0.8545,0.8166,810180,21.9
+full_hetero_gnn,1.0,1.0,1.0,1.0,1.0,1994436,45.6

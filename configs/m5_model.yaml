@@ -1,0 +1,104 @@
+# M5 — GNN Audit Model Configuration
+#
+# Architecture: Heterogeneous R-GCN encoder + multi-class edge-classification head.
+# Trained on the fused HeteroData graphs from M4 with weak-supervision discrepancy labels.
+
+architecture:
+  name: HeteroAuditGNN
+  encoder:
+    type: HeteroConv-RGCN
+    hidden_dim: 128
+    num_layers: 2
+    aggr: mean
+    dropout: 0.2
+    activation: relu
+
+  # Per-node-type input projections (since input feature dims differ)
+  node_input_dims:
+    Policy: 16             # learned embedding only (no text features for the Policy node itself)
+    PolicySegment: 384     # all-MiniLM-L6-v2 dim
+    DataType: 384          # name embedding
+    Purpose: 384
+    ThirdParty: 384
+    PrivacyLabel: 16
+    App: 64                # genreId one-hot (32 categories) + log(installs) bucket (8) + reserved (24)
+    SDK: 384               # SDK name + category embedding
+    Endpoint: 384          # not yet populated in v1
+
+  # Edge types from configs/schema.yaml — used for the relational message passing
+  # (HeteroConv builds one GCN per edge type)
+  edge_types_for_passing:
+    - [Policy, HAS_SEGMENT, PolicySegment]
+    - [PolicySegment, MENTIONS, DataType]
+    - [PolicySegment, FOR_PURPOSE, Purpose]
+    - [PolicySegment, SHARED_WITH, ThirdParty]
+    - [PrivacyLabel, DECLARES_COLLECTS, DataType]
+    - [PrivacyLabel, DECLARES_SHARES, DataType]
+    - [PrivacyLabel, DECLARES_PURPOSE, Purpose]
+    - [SDK, COLLECTS_DATATYPE, DataType]
+    - [SDK, OPERATED_BY, ThirdParty]
+    - [App, CONTAINS_SDK, SDK]
+    - [App, HAS_POLICY, Policy]
+    - [App, HAS_LABEL, PrivacyLabel]
+    # Reverse edges added programmatically for bidirectional message passing
+
+  classifier_head:
+    # For each (App, DataType) pair, predict discrepancy class
+    # Input: concat(App_embedding, DataType_embedding) -> MLP -> 4-way softmax
+    type: MLP
+    hidden_dim: 64
+    num_layers: 2
+    output_classes:
+      - CONSISTENT
+      - POLICY_LABEL_MISMATCH
+      - OVER_DISCLOSURE
+      - UNDECLARED_COLLECTION
+
+training:
+  optimizer: AdamW
+  lr: 0.001
+  weight_decay: 1e-4
+  batch_size: 8           # 8 graphs per batch (heterogeneous batching)
+  epochs: 50
+  early_stopping_patience: 8
+  loss: cross_entropy_with_class_weights
+  class_weights: balanced  # inverse frequency to handle imbalance
+  device: cpu              # prototype constraint; runs on CPU for reproducibility
+
+split:
+  strategy: app_level      # split by appId so train/val/test don't share apps
+  ratio: [0.7, 0.15, 0.15]
+  seed: 42
+
+baselines:
+  # These ablations directly answer the "differentiation from Ramasamy 2025" question
+  - name: tsne_pca_clustering
+    description: Reproduce Ramasamy 2025 — t-SNE + KMeans on policy text embeddings, no GNN, no graph structure. Predict discrepancy class via cluster centroid.
+    purpose: shows our improvement over the published baseline
+
+  - name: text_only_classifier
+    description: Logistic regression on concat(policy_text_emb, label_text_emb) per (App, DataType) pair. No graph structure.
+    purpose: shows the value of graph structure
+
+  - name: policy_only_gnn
+    description: Same R-GCN but with only Policy + PolicySegment + DataType nodes. No label, no runtime side.
+    purpose: shows the value of the tri-partite fusion
+
+  - name: full_hetero_gnn
+    description: Our model. All node types, all edge types.
+    purpose: headline result
+
+evaluation:
+  metrics:
+    - macro_f1
+    - per_class_f1
+    - per_class_precision
+    - per_class_recall
+    - confusion_matrix
+    - top_k_discrepancy_precision  # @ k=5, k=10, k=20
+
+  reports:
+    - model_card.md           # written by M5
+    - confusion_matrix.png    # saved to reports/
+    - per_class_pr_curves.png
+    - ablation_table.csv       # baselines side-by-side
