@@ -1,42 +1,55 @@
 # Data directory
 
-This repository ships with **only small, canonical artifacts**. Larger raw datasets
-and intermediate processed graphs are reproducible from the M1 acquisition scripts.
+This repository **does not ship raw or intermediate datasets**. All data sources are
+publicly available and reproducible from the M1 acquisition scripts in
+[`src/m1_acquire/`](../src/m1_acquire/).
 
-## What is shipped
+## Public data sources used
+
+All datasets below are open-access. URLs and licenses are listed for reproducibility.
+
+| # | Dataset | Source | License | Used in |
+|---|---|---|---|---|
+| 1 | OPP-115 (Privacy Policy Corpus) | [HuggingFace `alzoubi36/opp_115`](https://huggingface.co/datasets/alzoubi36/opp_115) (orig. Wilson et al. ACL 2016, [paper](https://aclanthology.org/P16-1126/)) | CC-BY-NC-SA 4.0 | M2 segment classifier (3,432 segments) |
+| 2 | Princeton Privacy Policy Historical Corpus | [GitHub `citp/privacy-policy-historical`](https://github.com/citp/privacy-policy-historical) (full SQLite at [privacypolicies.cs.princeton.edu/data](https://privacypolicies.cs.princeton.edu/data), 3.1 GB) | Research-use (Princeton CITP) | M4 fusion (~5K sampled markdown policies) |
+| 3 | Google Play Data Safety labels | [HuggingFace `WIPI/GoogleDataSafety`](https://huggingface.co/datasets/WIPI/GoogleDataSafety) (12.97M rows, 2022–2023 snapshot) | CC-BY-NC 4.0 | M3 runtime graph (5K-row sample, 381 apps) |
+| 4 | iOS Privacy Labels | [GitHub `Keeping-Privacy-Labels-Honest/privacyLabels`](https://github.com/Keeping-Privacy-Labels-Honest/privacyLabels) | Research-use | Optional cross-platform reference (~22K entries) |
+| 5 | Exodus Privacy tracker registry | [Public API: `reports.exodus-privacy.eu.org/api/trackers`](https://reports.exodus-privacy.eu.org/api/trackers) (no auth) | AGPL-3.0 | M3 SDK registry (432 trackers) |
+| 6 | Yale Privacy Lab tracker profiles | [GitHub `YalePrivacyLab/tracker-profiles`](https://github.com/YalePrivacyLab/tracker-profiles) | CC-BY-SA 4.0 | M3 SDK enrichment (77 profiles) |
+| 7 | TrackerControl xray-blacklist | [GitHub `TrackerControl/tracker-control-android`](https://github.com/TrackerControl/tracker-control-android) | GPL-3.0 | M3 tracker-domain mappings (771 entries) |
+
+## Expected directory layout (after running M1 scripts)
+
+After running the acquisition scripts below, your local `data/` will contain:
 
 ```
 data/
-├── raw/
-│   ├── opp115/categories.json              # OPP-115 10-category schema
-│   ├── exodus/trackers.json                # 432 Exodus tracker registry
-│   ├── yale_pl/trackers_parsed.json        # 77 Yale Privacy Lab profiles
-│   ├── trackercontrol/xray-blacklist.json  # 771 tracker-domain mappings
-│   ├── MANIFEST.md                         # full data inventory
-│   └── M1_REPORT.md                        # acquisition report
-└── processed/
-    ├── third_parties.json                  # canonical 817-entity third-party list
-    ├── sdk_registry.json                   # unified SDK→DataType registry (M3)
-    ├── discrepancy_labels_full.parquet     # 3,202 weak-supervision labels
-    └── m5_best_model_masked.pt             # trained GNN checkpoint (macro F1=0.9561)
+├── raw/                                # downloaded by M1 scripts (~190 MB total)
+│   ├── opp115/                         # HuggingFace cached dataset
+│   ├── princeton_ppc/                  # sampled policies
+│   ├── play_data_safety/               # parquet sample + schema
+│   ├── ios_labels/                     # privacy label samples
+│   ├── exodus/trackers.json            # 432 trackers
+│   ├── yale_pl/                        # 77 tracker profiles
+│   └── trackercontrol/                 # 771 mappings
+├── interim/                            # produced by M2/M3
+└── processed/                          # produced by M4/M5
+    ├── third_parties.json              # canonical 817-entity third-party list
+    ├── sdk_registry.json               # unified SDK→DataType registry (M3)
+    ├── discrepancy_labels_full.parquet # 3,202 weak-supervision labels
+    └── m5_best_model_masked.pt         # trained GNN checkpoint (macro F1 = 0.9561)
 ```
 
-## What is NOT shipped (reproducible)
+> **Note:** None of these files are checked into the repository. They are produced
+> entirely by re-running the M1 acquisition + M4/M5 pipeline scripts below.
 
-- **Princeton Privacy Policy Corpus** (~5K sampled markdown files, ~30 MB)
-- **Google Play Data Safety** parquet sample (~5K rows, ~5 MB)
-- **iOS privacy labels** sample (~22K entries, ~12 MB)
-- **268 fetched privacy policy texts** (~6 MB)
-- **268 fused HeteroData graphs** (~42 MB)
-- **252 generated audit PDFs** (~3 MB; 5 are shipped as samples in `reports/audits/`)
-
-## How to reproduce
+## How to reproduce from scratch
 
 ```bash
 # 1. Install dependencies
 pip install -r requirements.txt
 
-# 2. Run M1 acquisition (downloads ~190 MB to data/raw/)
+# 2. Run M1 acquisition (downloads ~190 MB into data/raw/)
 python -m src.m1_acquire.load_opp115
 python -m src.m1_acquire.load_princeton_ppc
 python -m src.m1_acquire.load_play_data_safety
@@ -45,19 +58,27 @@ python -m src.m1_acquire.load_exodus
 python -m src.m1_acquire.load_trackercontrol
 python -m src.m1_acquire.load_yale_pl
 
-# 3. Fetch policies + fuse graphs (M4)
-python -m src.m4_fusion.smoke_test            # 20-app sanity check
-python -m src.m4_fusion.run_full_fusion        # all 268 apps (~13 min)
+# 3. Build per-app fused HeteroData graphs (M2 → M3 → M4)
+python -m src.m4_fusion.smoke_test           # 20-app sanity check
+python -m src.m4_fusion.run_full_fusion      # all 268 apps (~13 min)
 
 # 4. Train the GNN with edge masking (M5)
-python -m src.m5_model.run_masked_experiment   # ~6 min on CPU
+python -m src.m5_model.run_masked_experiment # ~6 min on CPU
 
 # 5. Generate per-app audit PDFs (M6)
 python -c "from src.m6_report.batch import generate_all; generate_all()"
 
 # 6. Launch the dashboard (M7)
-python -m src.m7_dashboard.app                  # http://localhost:8050
+python -m src.m7_dashboard.app                # http://localhost:8050
 ```
 
-All scripts are deterministic with `seed=42`. End-to-end reproduction takes
-about 25 minutes on a modern CPU (no GPU required).
+## Honesty note
+
+- All 7 data sources are **public, real, and openly available**. No simulated or
+  synthetic data is used at any stage of the pipeline.
+- The 3,202 discrepancy labels are **weak-supervision labels** derived from a
+  deterministic rule over Play data-safety + policy text + Exodus SDK signals.
+  They are not human-annotated; class noise is expected (especially for
+  `OVER_DISCLOSURE`).
+- 5 sample audit PDFs are shipped in [`reports/audits/`](../reports/audits/);
+  the full set of 252 PDFs is regenerated by step 5 above.

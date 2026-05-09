@@ -127,7 +127,7 @@ def _extract_pairs(graphs: List[HeteroData]) -> Tuple[np.ndarray, np.ndarray]:
 
 
 # ---------------------------------------------------------------------------
-# Baseline 1: tsne_pca_clustering (Ramasamy 2025 repro)
+# Baseline 1: tsne_pca_clustering (topic-modeling baseline)
 # ---------------------------------------------------------------------------
 
 def run_tsne_pca_clustering(

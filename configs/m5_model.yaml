@@ -71,10 +71,10 @@ split:
   seed: 42
 
 baselines:
-  # These ablations directly answer the "differentiation from Ramasamy 2025" question
+  # These ablations measure the contribution of (a) graph structure and
   - name: tsne_pca_clustering
-    description: Reproduce Ramasamy 2025 — t-SNE + KMeans on policy text embeddings, no GNN, no graph structure. Predict discrepancy class via cluster centroid.
-    purpose: shows our improvement over the published baseline
+    description: Topic-modeling baseline — t-SNE + KMeans on policy text embeddings, no GNN, no graph structure. Predict discrepancy class via cluster centroid.
+    purpose: shows the GNN's improvement over a purely text-clustering approach
 
   - name: text_only_classifier
     description: Logistic regression on concat(policy_text_emb, label_text_emb) per (App, DataType) pair. No graph structure.

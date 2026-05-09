@@ -60,7 +60,7 @@ Test split: 39 held-out apps, 521 labeled `(app, data_type)` pairs, 30% edge mas
 | Policy-only GNN | 0.69 | R-GCN on M2 policy graph |
 | **Full heterogeneous GNN (this work)** | **0.96** | R-GCN on fused tri-partite graph |
 
-> **+0.27 absolute Macro F1** over a strong policy-only GNN; **3.4× relative gain** over the topic-modeling baseline.
+> **+0.26 absolute Macro F1** over a strong policy-only GNN; **3.4× relative gain** over the topic-modeling baseline.
 
 **Per-class F1 (30% mask):** `CONSISTENT` 0.92 · `POLICY_LABEL_MISMATCH` 0.95 · `OVER_DISCLOSURE` 0.98 · `UNDECLARED_COLLECTION` 0.97.
 
@@ -141,6 +141,28 @@ This is a research prototype. The numbers are real, the limits are explicit:
 4. **Edge-masked evaluation is the primary number.** The unmasked 100% F1 is reported only as the diagnostic that motivated the masked protocol.
 5. **No legal advice.** Discrepancies are signals for human review, not regulatory findings.
 6. **Public traces only.** No proprietary or unauthorized data sources.
+
+---
+
+## References
+
+The `tsne_pca_clustering` baseline in this work is a topic-modeling approach inspired by prior research on graph- and topic-based privacy-policy analysis. Two recent works are particularly relevant; PolicyGraphAudit-RT extends them by adding (i) Play Store data-safety labels, (ii) inferred third-party SDK behavior, and (iii) a heterogeneous R-GCN trained under deliberate edge masking to avoid label leakage.
+
+1. Ramasamy, V., Barrett, S., Dorai, G., & Zumbach, J. (2025). *Unveiling Privacy Policy Complexity: An Exploratory Study Using Graph Mining, Machine Learning, and Natural Language Processing.* arXiv:2507.02968 [cs.CR]. Accepted at AIRC 2025. https://arxiv.org/abs/2507.02968
+
+2. Chowdhury, H., Morsalin, M. I., Azade, R. S., Ramasamy, V., & Dorai, G. (2026). *GraphDPR: A Privacy Policy Analysis Framework Using Knowledge Graphs and Topic Modeling.* In *Social Networks Analysis and Mining — 17th International Conference, ASONAM 2025, Proceedings* (LNCS Vol. 16322, pp. 422–430). Springer. https://doi.org/10.1007/978-3-032-13513-1_33
+
+3. Wilson, S., Schaub, F., Dara, A. A., Liu, F., Cherivirala, S., Leon, P. G., Andersen, M. S., Zimmeck, S., Sathyendra, K. M., Russell, N. C., Norton, T. B., Hovy, E., Reidenberg, J., & Sadeh, N. (2016). *The Creation and Analysis of a Website Privacy Policy Corpus (OPP-115).* In *Proceedings of the 54th Annual Meeting of the Association for Computational Linguistics (ACL 2016)* (pp. 1330–1340). https://aclanthology.org/P16-1126/
+
+4. Schlichtkrull, M., Kipf, T. N., Bloem, P., van den Berg, R., Titov, I., & Welling, M. (2018). *Modeling Relational Data with Graph Convolutional Networks.* In *European Semantic Web Conference (ESWC 2018)* (pp. 593–607). Springer. https://arxiv.org/abs/1703.06103
+
+5. Reimers, N., & Gurevych, I. (2019). *Sentence-BERT: Sentence Embeddings Using Siamese BERT-Networks.* In *Proceedings of the 2019 Conference on Empirical Methods in Natural Language Processing (EMNLP-IJCNLP)* (pp. 3982–3992). https://arxiv.org/abs/1908.10084
+
+6. Exodus Privacy. *Exodus Tracker Registry* (public API). https://reports.exodus-privacy.eu.org/api/trackers
+
+7. Princeton Center for Information Technology Policy. *Privacy Policy Historical Corpus.* https://github.com/citp/privacy-policy-historical
+
+8. WIPI Project. *Google Play Data Safety Dataset* (HuggingFace, CC-BY-NC-4.0). https://huggingface.co/datasets/WIPI/GoogleDataSafety
 
 ---
 

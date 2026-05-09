@@ -1,7 +1,7 @@
 """
 baselines.py — Ablation baseline models for M5.
 
-Baseline 1: tsne_pca_clustering (Ramasamy 2025 reproduction)
+Baseline 1: tsne_pca_clustering (topic-modeling baseline)
     PCA(10) + KMeans(4) on policy text embeddings → majority-class prediction.
 
 Baseline 2: text_only_logreg
@@ -120,7 +120,7 @@ def _extract_pairs(
 
 
 # ---------------------------------------------------------------------------
-# Baseline 1: tsne_pca_clustering (Ramasamy 2025)
+# Baseline 1: tsne_pca_clustering (topic-modeling baseline)
 # ---------------------------------------------------------------------------
 
 def run_tsne_pca_clustering(
@@ -128,11 +128,11 @@ def run_tsne_pca_clustering(
     test_graphs: List[HeteroData],
 ) -> dict:
     """
-    Reproduce Ramasamy 2025: PCA(10) + KMeans(4) on policy text embeddings.
+    Topic-modeling baseline: PCA(10) + KMeans(4) on policy text embeddings.
     For each (App, DataType) test pair, predict the majority discrepancy class
     within the cluster of the app's policy.
     """
-    print("  [Baseline 1] tsne_pca_clustering (Ramasamy 2025 repro)...")
+    print("  [Baseline 1] tsne_pca_clustering (topic-modeling baseline)...")
     t0 = time.time()
 
     # Build policy embeddings for all train apps
